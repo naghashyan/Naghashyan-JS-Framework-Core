@@ -10,16 +10,16 @@ NGS.Dispatcher = {
   loadsObject: {},
 
   initialize: function () {
-    if (NGS.getInitialLoad()) {
-      NGS.nestLoad(NGS.getInitialLoad().load, NGS.getInitialLoad().params);
+    if(NGS.getInitialLoad()){
+      NGS.nestLoad(NGS.getInitialLoad().load, eval("(" + NGS.getInitialLoad().params + ")"));
     }
   },
 
   load: function (loadObject, params) {
     var _url = "";
-    if (loadObject.getUrl() != "") {
+    if(loadObject.getUrl() != ""){
       _url = this.computeUrl(loadObject.getUrl());
-    } else {
+    } else{
       _url = this.computeUrl(loadObject.getPackage(), loadObject.getName());
     }
 
@@ -29,7 +29,7 @@ NGS.Dispatcher = {
       onComplete: function (responseText) {
         try {
           var res = JSON.parse(responseText);
-          if (typeof (res) == "object" && typeof (res.nl)) {
+          if(typeof (res) == "object" && typeof (res.nl)){
             for (var p in res.nl) {
               var nestedLoad = res.nl[p];
               for (var i = 0; i < nestedLoad.length; i++) {
@@ -49,6 +49,14 @@ NGS.Dispatcher = {
       onError: function (responseText) {
         var res = JSON.parse(responseText);
         loadObject.onError(res);
+      }.bind(this),
+      onInvalidUser: function (responseText) {
+        var res = JSON.parse(responseText);
+        loadObject.onInvalidUser(res);
+      }.bind(this),
+      onNoAccess: function (responseText) {
+        var res = JSON.parse(responseText);
+        loadObject.onNoAccess(res);
       }.bind(this)
     };
     NGS.AjaxLoader.request(_url, options);
@@ -61,13 +69,21 @@ NGS.Dispatcher = {
       params: params,
       onComplete: function (responseText) {
         var res = JSON.parse(responseText);
-        actionObject.setArgs(res.params);
-        actionObject.afterAction(res.params);
-        actionObject.onComplate(res.params);
+        actionObject.setArgs(res);
+        actionObject.afterAction(res);
+        actionObject.onComplate(res);
       }.bind(this),
       onError: function (responseText) {
         var res = JSON.parse(responseText);
         actionObject.onError(res);
+      }.bind(this),
+      onInvalidUser: function (responseText) {
+        var res = JSON.parse(responseText);
+        actionObject.onInvalidUser(res);
+      }.bind(this),
+      onNoAccess: function (responseText) {
+        var res = JSON.parse(responseText);
+        actionObject.onNoAccess(res);
       }.bind(this)
     };
     NGS.AjaxLoader.request(_url, options);
@@ -104,11 +120,11 @@ NGS.Dispatcher = {
         break;
     }
     var dynContainer = "";
-    if (NGS.getConfig().dynContainer != "") {
+    if(NGS.getConfig().dynContainer != ""){
       dynContainer = "/" + NGS.getConfig().dynContainer + "/";
     }
     var module = "";
-    if (NGS.getModule() != null) {
+    if(NGS.getModule() != null){
       module = NGS.getModule() + "/";
     }
     return NGS.getHttpHost() + dynContainer + _package + "/" + command;

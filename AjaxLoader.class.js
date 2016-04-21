@@ -70,6 +70,10 @@ NGS.AjaxLoader = {
           options.onComplete(xmlhttp.responseText);
         } else if (xmlhttp.status == 400) {
           options.onError(xmlhttp.responseText);
+        } else if(xmlhttp.status == 401){
+          options.onInvalidUser(xmlhttp.responseText);
+        } else if(xmlhttp.status == 403){
+          options.onNoAccess(xmlhttp.responseText);
         }
         NGS.hideAjaxLoader();
       }
@@ -107,36 +111,46 @@ NGS.AjaxLoader = {
    * @param  obj:Object
    *
    **/
-  serializeUrl : function(obj) {
-    var str = [];
-    for (var p in obj) {
-      if (obj.hasOwnProperty(p)) {
-        if (obj[p] instanceof Array) {
-          str.push(this.serializeArrayToUrl(obj[p], p));
-          continue;
-        }
-        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+  serializeUrl: function (a) {
+    var prefix, s, add, name, r20, output;
+    s = [];
+    r20 = /%20/g;
+    add = function (key, value) {
+      // If value is a function, invoke it and return its value
+      value = ( typeof value == 'function' ) ? value() : ( value == null ? "" : value );
+      s[s.length] = encodeURIComponent(key) + "=" + encodeURIComponent(value);
+    };
+    if(a instanceof Array){
+      for (name in a) {
+        add(name, a[name]);
+      }
+    } else{
+      for (prefix in a) {
+        this.buildParams(prefix, a[prefix], add);
       }
     }
-    return str.join("&");
+    output = s.join("&").replace(r20, "+");
+    return output;
   },
-
-  /**
-   * serialize array to url string
-   *
-   * @param  urlArrayParams:Array
-   * @param  prefix:String
-   *
-   **/
-  serializeArrayToUrl : function(urlArrayParams, prefix) {
-    var str = [];
-    for (var i = 0; i < urlArrayParams.length; i++) {
-      if (urlArrayParams[i] instanceof Array) {
-        str.push(this.serializeArrayToUrl(urlArrayParams[i], i));
-        continue;
+  buildParams: function (prefix, obj, add) {
+    var name, i, l, rbracket;
+    rbracket = /\[\]$/;
+    if(obj instanceof Array){
+      for (i = 0, l = obj.length; i < l; i++) {
+        if(rbracket.test(prefix)){
+          add(prefix, obj[i]);
+        } else{
+          this.buildParams(prefix + "[" + ( typeof obj[i] === "object" ? i : "" ) + "]", obj[i], add);
+        }
       }
-      str.push(encodeURIComponent(prefix) + "[]=" + encodeURIComponent(urlArrayParams[i]));
+    } else if(typeof obj == "object"){
+      // Serialize object item.
+      for (name in obj) {
+        this.buildParams(prefix + "[" + name + "]", obj[name], add);
+      }
+    } else{
+      // Serialize scalar item.
+      add(prefix, obj);
     }
-    return str.join("&");
   }
 };

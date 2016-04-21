@@ -90,7 +90,6 @@ NGS = {
    *
    */
   nestLoad : function(loadName, params, parent) {
-    
     try {
       var laodObj = this.getNGSItemObjectByNameAndType("load", loadName);
       laodObj.nestLoad(parent, params);
@@ -266,7 +265,6 @@ NGS = {
    * return Object loadObject
    */
   getNGSItemObjectByNameAndType : function(type, itemName) {
-
     if ( typeof (itemName) != "string") {
       throw new Error(itemName + " " + type + " not found");
     }
@@ -471,7 +469,7 @@ NGS = {
    *
    */
   emptyFunction : function() {
-    return;
+    
   },
   /**
    * Hellper method for geglobal scope eval

@@ -218,7 +218,27 @@ NGS.AbstractAction = NGS.Class({
     NGS.LanguageManager.onLoad(loadObj.getName(), loadObj);
   },
 
-	onComplate : function(params) {
+  onComplate: function (params) {
 
-	}
-}); 
+  },
+  onNoAccess: function (response) {
+    if(response.redirect_to){
+      window.location.href = response.redirect_to;
+      return;
+    }
+    if(response.redirect_to_load){
+      NGS.load(response.redirect_to_load, {});
+      return;
+    }
+  },
+  onInvalidUser: function (response) {
+    if(response.redirect_to){
+      window.location.href = response.redirect_to;
+      return;
+    }
+    if(response.redirect_to_load){
+      NGS.load(response.redirect_to_load, {});
+      return;
+    }
+  }
+});
